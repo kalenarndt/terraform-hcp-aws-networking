@@ -32,12 +32,32 @@ override.tf.json
 # example: *tfplan*
 
 .terraform.lock.hcl
-
-# Ignore secrets file
-secrets.tfvars
-
-# Ignores pre-commit hooks and editorconfig
-.editorconfig
-.pre-commit-config.yaml
-
 # End of https://www.toptal.com/developers/gitignore/api/terraform
+
+
+### Packer ###
+# Cache objects
+**/packer_cache/*
+
+# Crash log
+crash.log
+
+# build logs
+**/logs/*
+
+# For built boxes
+*.box
+
+# Mac things
+*.DS_Store
+
+### Packer Patch ###
+# ignore temporary output files
+output-*/
+
+### Licenses ###
+*.license
+
+### Local Secrets ##
+secrets.auto.tfvars
+vault_kv_secrets.yaml

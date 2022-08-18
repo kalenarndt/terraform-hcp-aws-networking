@@ -3,7 +3,6 @@ variable "hvn_id" {
   type        = string
 }
 
-
 variable "hvn_peering_id" {
   description = "The Peering ID of the HCP Vault HVN."
   type        = string
@@ -15,7 +14,6 @@ variable "vpc_owner_id" {
   type        = string
   default     = ""
 }
-
 
 variable "vpc_peering" {
   description = "Flag to enable vpc peering with HCP and AWS"
@@ -35,11 +33,6 @@ variable "vpc_id" {
   default     = ""
 }
 
-variable "vpc_owner_id" {
-  description = "Peer account ID from AWS"
-  type        = string
-  default     = ""
-}
 
 variable "destination_cidr" {
   description = "Destination CIDR block for HCP to communicate with"
@@ -52,6 +45,7 @@ variable "vpc_region" {
   type        = string
   default     = ""
 }
+
 variable "hvn_route_id" {
   description = "The ID of the HCP HVN route."
   type        = string
@@ -66,12 +60,6 @@ variable "region" {
     condition     = var.region != "us-west-2" || var.region != "us-east-1" || var.region != "eu-west-1" || var.region != "eu-west-2" || var.region != "eu-central-1" || var.region != "ap-southeast-1" || var.region != "ap-southeast-2"
     error_message = "The variable region must be \"us-west-2\", \"us-east-1\", \"eu-west-1\", \"eu-west-2\", \"eu-central-1\", \"ap-southeast-1\", or \"ap-southeast-2\"."
   }
-}
-
-variable "hvn_peering_id" {
-  description = "The ID of the HCP peering connection."
-  type        = string
-  default     = "hcp-hvn-peering"
 }
 
 variable "transit_gw_attachment_id" {
@@ -100,5 +88,5 @@ variable "routes" {
     "gcp"     = "172.200.0.0/16"
   }
   EOT
-  type = map(string)
+  type        = map(string)
 }
