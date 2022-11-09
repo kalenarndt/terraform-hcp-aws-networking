@@ -18,7 +18,7 @@ variable "vpc_owner_id" {
 variable "vpc_peering" {
   description = "Flag to enable vpc peering with HCP and AWS"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "transit_gateway" {
@@ -33,23 +33,10 @@ variable "vpc_id" {
   default     = ""
 }
 
-
-variable "destination_cidr" {
-  description = "Destination CIDR block for HCP to communicate with"
-  type        = string
-  default     = ""
-}
-
 variable "vpc_region" {
   description = "Region where the AWS VPC was created"
   type        = string
   default     = ""
-}
-
-variable "hvn_route_id" {
-  description = "The ID of the HCP HVN route."
-  type        = string
-  default     = "hcp-hvn-route"
 }
 
 variable "region" {
@@ -89,4 +76,15 @@ variable "routes" {
   }
   EOT
   type        = map(string)
+}
+
+variable "route_table_ids" {
+  description = "(Optional) List of the route table IDs in the AWS VPC"
+  type        = list(string)
+  default     = [""]
+}
+
+variable "hvn_cidr_block" {
+  description = "(Required) CIDR block for the HVN VPC"
+  type        = string
 }

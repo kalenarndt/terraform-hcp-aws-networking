@@ -1,3 +1,8 @@
+locals {
+  vpc_route_table_ids = { for k, v in var.route_table_ids : k => v if var.vpc_peering == true }
+  vpc_routes          = { for k, v in var.routes : k => v if var.vpc_peering == true }
+  tgw_routes          = { for k, v in var.routes : k => v if var.transit_gateway == true }
+}
 
 // Lookup the existing HVN
 data "hcp_hvn" "hvn" {
@@ -8,14 +13,14 @@ data "hcp_hvn" "hvn" {
 
 // creates a route for HVN to aws via the vpc
 resource "hcp_hvn_route" "vpc_route" {
-  count            = { for k, v in try(var.routes, []) : k => v if var.vpc_peering == true }
+  for_each         = local.vpc_routes
   hvn_link         = data.hcp_hvn.hvn.self_link
-  hvn_route_id     = var.hvn_route_id
-  destination_cidr = var.destination_cidr
+  hvn_route_id     = each.key
+  destination_cidr = each.value
   target_link      = hcp_aws_network_peering.vpc_peer[0].self_link
 }
 
-// creates a peering request with aws for a flat hvn
+// creates a peering request with aws
 resource "hcp_aws_network_peering" "vpc_peer" {
   count           = var.vpc_peering ? 1 : 0
   hvn_id          = data.hcp_hvn.hvn.hvn_id
@@ -30,13 +35,25 @@ resource "aws_vpc_peering_connection_accepter" "hvn_aws_vpc_accept" {
   count                     = var.vpc_peering ? 1 : 0
   vpc_peering_connection_id = hcp_aws_network_peering.vpc_peer[0].provider_peering_id
   auto_accept               = true
+  accepter {
+    allow_remote_vpc_dns_resolution = true
+  }
   tags = {
     Name = var.hvn_peering_id
   }
 }
+
+// accept the peering request between hvn and aws
+resource "aws_route" "aws_vpc_to_hvn" {
+  for_each                  = local.vpc_route_table_ids
+  route_table_id            = each.value
+  destination_cidr_block    = var.hvn_cidr_block
+  vpc_peering_connection_id = hcp_aws_network_peering.vpc_peer[0].provider_peering_id
+}
 ###################################### END HVN VPC Peering ######################################
 
 ######################################  HVN Transit Gateway  #######################################
+
 
 // associates the hcp provider id with the resource_share arn in aws
 resource "aws_ram_principal_association" "hcp_aws_ram" {
@@ -69,7 +86,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment_accepter" "hvn_aws_tgw_accept" 
 
 // creates a route from hvn to aws via the transit gateway
 resource "hcp_hvn_route" "hvn_tgw_route" {
-  for_each         = { for k, v in try(var.routes, []) : k => v if var.transit_gateway == true }
+  for_each         = local.tgw_routes
   hvn_link         = data.hcp_hvn.hvn.self_link
   hvn_route_id     = each.key
   destination_cidr = each.value
